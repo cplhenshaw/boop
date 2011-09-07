@@ -8,8 +8,8 @@ typedef struct
 {
     int numVertices;
     indexTriplet *indices;
-	//need to add a material index of some sort here, and update it while read in the .obj file
-    
+	//need to add a material index of some sort here, and update it while read in the .obj file	
+    char *materialName; 
 } OBJFACE;
 
 

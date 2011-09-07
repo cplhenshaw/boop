@@ -1,14 +1,25 @@
-PROJECT = obj3do
-OBJ = main.o read3do.o modl.o write3do.o writeObj.o checkedMem.o objStructs.o readObj.o update3do.o
+PROJECT1 = 3doobj
+OBJ1 = main1.o modl.o read3do.o checkedMem.o writeObj.o
+
+PROJECT2 = obj3do
+OBJ2 = main2.o modl.o read3do.o checkedMem.o objStructs.o readObj.o update3do.o write3do.o
 
 C99 = gcc -std=c99
 CFLAGS = -Wall -Werror -pedantic
 
-$(PROJECT) : $(OBJ)
-	$(C99) $(CFLAGS) -o $(PROJECT) $(OBJ)
+all: $(PROJECT1) $(PROJECT2)
 
-main.o : modl.h read3do.h main.c
-	$(C99) $(CFLAGS) -c -o main.o main.c
+$(PROJECT1) : $(OBJ1)
+	$(C99) $(CFLAGS) -o $(PROJECT1) $(OBJ1)
+
+$(PROJECT2) : $(OBJ2)
+	$(C99) $(CFLAGS) -o $(PROJECT2) $(OBJ2)
+
+main1.o : modl.h read3do.h writeObj.h main1.c
+	$(C99) $(CFLAGS) -c -o main1.o main1.c
+
+main2.o : modl.h read3do.h readObj.h update3do.h write3do.h main2.c
+	$(C99) $(CFLAGS) -c -o main2.o main2.c
 
 read3do.o : modl.h checkedMem.h read3do.h read3do.c
 	$(C99) $(CFLAGS) -c -o read3do.o read3do.c 
@@ -35,4 +46,6 @@ update3do.o : objStructs.h modl.h checkedMem.h update3do.h update3do.c
 	$(C99) $(CFLAGS) -c -o update3do.o update3do.c
 
 clean:
-	rm -f $(OBJ) $(PROJECT)
+	rm -f $(OBJ2) $(PROJECT2)
+	rm -f $(OBJ1) $(PROJECT1)
+	

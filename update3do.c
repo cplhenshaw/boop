@@ -28,12 +28,13 @@ void setFaceDefaults(MESH *mesh, FACE *face)
 	a[i] = b[i] = c[i] = 0;
     }
     face->extraLight = 0.0;
+    face->materialIndex = 0;	//set to 0 here, and override later if a material is specified for this face
 
     return;
 }
 
 //update a MESH structure with the info from a GROUP structure
-void updateMesh(MESH *mesh, GROUP *group, float meshOffset[3])
+void updateMesh(MODL *model, MESH *mesh, GROUP *group, float meshOffset[3])
 {
 	printf("Updating mesh %s\n", mesh->meshName);
     //update the vertice array
@@ -85,7 +86,7 @@ void updateMesh(MESH *mesh, GROUP *group, float meshOffset[3])
 	setFaceDefaults(mesh, mesh->faces[i]);
     }
 
-    //update each face
+    //UPDATE EACH FACE
     for(int i=0; i<mesh->numFaces; i++)
     {
 	FACE *f = mesh->faces[i];
@@ -118,14 +119,29 @@ void updateMesh(MESH *mesh, GROUP *group, float meshOffset[3])
 
 	}
 
-	//copy in the material index (NOT YET READ INTO OBJFACE IN readObj.c)
-	f->materialIndex = 0;	//0 for now to stop SEGFAULTS when writing :o
+	if(f->hasMaterial != 0)
+	{
+	    //determine which material this face should use
+	    for(int i=0; i < model->numMaterials; i++)
+	    {
+		//if the .obj material name matches one in the MODL
+		if(strcmp(model->materialNames[i], of->materialName) == 0)
+		{
+		    //use this material and stop searching
+		    f->materialIndex = i;
+		    break;
 
+		}
+	    }
+	}
     }
+    //FINISHED updating faces
 
+    //in the above process the normals array should have been filled out as they were specified
     //just alert if this is not quite working
     for(int i=0; i<mesh->numVertices; i++)
     {
+	//if this normal was never updated during the process
 	if(isUpdated[i] != 1)
 	{   
 	    printf("%d\n", isUpdated[i]);
@@ -165,7 +181,7 @@ void updateMeshes(MODL *model, OBJ *obj, NODE *node, float parentOffset[3])
 	    if(strstr(group->groupName, mesh->meshName) != NULL)
 	    {
 		//update
-		updateMesh(mesh, group, meshOffset);
+		updateMesh(model, mesh, group, meshOffset);
 		found = 1;
 		//stop searching
 		break;

@@ -57,10 +57,16 @@ void printMesh( MODL *model, MESH *mesh, float offset[3], FILE *ofp )
 	    //update index and declare new material in .obj file
 	    fprintf(ofp, "usemtl ");
 	    char *m = model->materialNames[face->materialIndex];
+	    
+	/*
+	    //replace the .mat with some other format for whatever texture 
+	    //may not use this, see replacement directly below
 	    int c = 0;
 	    do {fprintf(ofp, "%c", m[c]);} while(m[c++] != '.');
 	    fprintf(ofp, "gif\n");
-
+	*/
+	    //print "whatever.mat" as the material name, if eventually do a .mtl as will this can remain the name and the texture specified within the .mtl  Then when reading back in can just use the material name directly to determine which .mat to use
+	    fprintf(ofp, "%s\n", m);
 	    prevMatIndex = face->materialIndex;
 	}
 
@@ -128,12 +134,12 @@ void printObj( MODL *model, char *filename )
 {
     if(model == NULL)
     {
-	fprintf(stderr, "writeObj() called with null MODL*\n");
+	fprintf(stderr, "printObj() called with null MODL*\n");
 	return;
     }
     if(filename == NULL)
     {
-	fprintf(stderr, "writeObj() called with null filename.\n");
+	fprintf(stderr, "printObj() called with null filename.\n");
 	return;
     }
 
@@ -153,8 +159,57 @@ void printObj( MODL *model, char *filename )
 	printNode(model, model->nodes[0], startingOffset, ofp);
 
     }
-
+    
+    //close the file (ideally check to ensure it closed properly)
+    fclose(ofp);
     return; 
 	
 		
+}
+
+/* Accepts a MODL structure previously filled by read3do() and the name of the file to write to.  It then produces a .mtl file to accompany the .obj file.  Each material name will be for example "m_eye.mat" and it will then specify a texture for that material (perhaps "m_eye.gif" pr whatever format is need. */
+void printMtl( MODL *model, char *filename )
+{
+    if(model == NULL)
+    {
+	fprintf(stderr, "printMtl() called with null MODL*\n");
+	return;
+    }
+    if(filename == NULL)
+    {
+	fprintf(stderr, "printMtl() called with null filename.\n");
+	return;
+    }
+
+    //open the file for writing and ensure success
+    FILE *ofp = fopen(filename, "w");
+    if(ofp == NULL)
+    {
+	fprintf(stderr, "Could not open %s for writing.\n", filename);
+	return;
+    }
+
+    fprintf(ofp, "# Material Count: %d\n", model->numMaterials);
+
+    //for each material in the MODL create a new material in the .mtl file
+    for(int i=0; i < model->numMaterials; i++)
+    {
+	fprintf(ofp, "newmtl %s\n", model->materialNames[i]);
+	fprintf(ofp, "map_Kd ");
+	//swap the .mat for .gif (or whatever is needed)
+	char *t = model->materialNames[i];
+	while(*t != '.')
+	{
+	    fprintf(ofp, "%c", *t);
+	    t++;
+	}
+	fprintf(ofp, ".gif\n");
+
+	//i.e	newmtl m_eye.mat
+	//	map_Ka m_eye.gif
+    }
+
+    //close the file and return
+    fclose(ofp);
+    return;
 }

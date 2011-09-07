@@ -1,11 +1,14 @@
 /*Second attempt.  This time just read the contents of the .obj file into some structures and later can deal with how to output them. */
 #include "objStructs.h"
 #include "checkedMem.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_LINE_LEN 64
 #define MAX_GROUP_NAME 32
+#define MAX_MAT_NAME 32
 
 //global state, the vertice group which lines from the file are contributing to
 GROUP *group;
@@ -18,6 +21,9 @@ int totalTexVertexCount;
 
 int groupNormalCount;
 int totalNormalCount;
+
+//the current amterial
+char matName[MAX_MAT_NAME];
 
 void processGroupLine(OBJ *obj, char *line)
 {	
@@ -116,6 +122,24 @@ void processFaceLine(char *line)
 	it[1] -= totalTexVertexCount;
 	it[2] -= totalNormalCount;
     }
+
+    //make room and store the name of the material for this face
+    f->materialName = checked_malloc(sizeof(matName));
+    strncpy(f->materialName, matName, MAX_MAT_NAME);
+}
+
+//update the current material
+void processMaterialLine(char *line)
+{
+    if(group == NULL) return;
+    //read into the global matName char arrray
+    int read = sscanf(line, "usemtl %s", matName);
+    if(read != 1)  fprintf(stderr, "sscanf() read %d values in processMaterialLine()\n", read);
+
+	printf("TEST: %s just read in\n", matName);
+
+    return;
+    
 }
 
 /* Add any relevant data from this line into the OBJ structure. */
@@ -147,6 +171,9 @@ void processLine(OBJ *obj, char *line)
 	    break;
 	case 'f':
 	    processFaceLine(line);
+	    break;
+	case 'u':
+	    processMaterialLine(line);
 	    break;
 	default:
 	    fprintf(stderr, "Unhandled line: %s\n", line);

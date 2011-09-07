@@ -252,6 +252,7 @@ void write3do( MODL *model, char *filename )
 	checked_fwrite(model->unknown4, 4, 6, ofp);
 
 	//close the file pointer (forgot this :/)
+	//ideally also check that it closed correctly
 	fclose(ofp);
 
 	return;
