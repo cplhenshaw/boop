@@ -22,7 +22,7 @@ int totalTexVertexCount;
 int groupNormalCount;
 int totalNormalCount;
 
-//the current amterial
+//the current material
 char matName[MAX_MAT_NAME];
 
 void processGroupLine(OBJ *obj, char *line)
@@ -66,7 +66,13 @@ void processTexVertexLine(char *line)
     if(group == NULL) return;
     if(++group->numTexVertices > group->texVertSize) growTexVertices(group);
     float *vt = group->texVertices[group->numTexVertices - 1];
+
+    //NOTE: Reading in the texture vertices here is tied to how they are written out in writeObj.c  If the vertical texture coord is written inverted, it must again be inverted here, if they are scaled base on texture size when written they must be unscaled here etc
     int read = sscanf(line, "vt %f %f", vt, vt+1);
+    //reinvert vertical coordinate
+    *(vt+1) *= -1;
+	
+
     if(read != 2) fprintf(stderr, "sscanf() read %d values in processTexVertexLine()\n", read);
     //update the global count of all texture vertices in this group
     groupTexVertexCount++;
@@ -136,7 +142,14 @@ void processMaterialLine(char *line)
     int read = sscanf(line, "usemtl %s", matName);
     if(read != 1)  fprintf(stderr, "sscanf() read %d values in processMaterialLine()\n", read);
 
-	printf("TEST: %s just read in\n", matName);
+    //blender appends stuff to the end of the original material name, strip this off
+    char *c = strstr(matName, ".mat");
+
+    //if .mat is in the name, drop a terminating null byte after it
+    if( c != NULL)
+    {
+	*(c+4) = '\0';	
+    }
 
     return;
     
@@ -165,7 +178,7 @@ void processLine(OBJ *obj, char *line)
 		    processNormalLine(line);
 		    break;
 		default:
-		    fprintf(stderr, "Unhandled line: %s\n", line);
+		    fprintf(stderr, "Unhandled line: %s", line);
 		    break;
 	    }
 	    break;
@@ -176,7 +189,7 @@ void processLine(OBJ *obj, char *line)
 	    processMaterialLine(line);
 	    break;
 	default:
-	    fprintf(stderr, "Unhandled line: %s\n", line);
+	    fprintf(stderr, "Unhandled line: %s", line);
 	    break;
     }
 }
@@ -213,7 +226,7 @@ OBJ *readObj(char *filename)
     //check the state of the file stream
     if(feof(ifp)) 
     {
-	printf("Read to completion of the .obj file\n");
+	//printf("Read to completion of the .obj file\n");
     }
     else if(ferror(ifp) != 0)
     {

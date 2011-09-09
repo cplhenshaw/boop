@@ -3,6 +3,7 @@
 #include "modl.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "matScaler.h"
 
 
 /* Writes a MESH structure to a file stream as part of a .obj file.*/
@@ -26,7 +27,9 @@ void printMesh( MODL *model, MESH *mesh, float offset[3], FILE *ofp )
     for(int i=0; i < mesh->numTexVertices; i++)
     {
 	float *vt = mesh->texVertices[i];
-	fprintf(ofp, "vt %f %f\n", vt[0], vt[1]);
+	
+	//NOTE: Writing out the texture vertices here is tied to how they must be read back in within readObj.c  Whatever happens here must be "undone" when reading back in after editing
+	fprintf(ofp, "vt %f %f\n", vt[0], -vt[1]); 
     }
     fprintf(ofp, "\n");
 
@@ -47,7 +50,7 @@ void printMesh( MODL *model, MESH *mesh, float offset[3], FILE *ofp )
 
     //remember the previous material index
     int prevMatIndex = -1;
-    //print the faces
+    //PRINT THE FACES
     for(int i=0; i < mesh->numFaces; i++)
     {
 	FACE *face = mesh->faces[i];
@@ -82,7 +85,6 @@ void printMesh( MODL *model, MESH *mesh, float offset[3], FILE *ofp )
 	    fprintf(ofp, "%d/%d/%d ", vi, tvi, vi);
 	}
 	fprintf(ofp, "\n");
-	//DOES OBJ TAKE FACE NORMALS AS WELL?????????????????
     }
     fprintf(ofp, "\n");
 
@@ -143,6 +145,10 @@ void printObj( MODL *model, char *filename )
 	return;
     }
 
+    //SCALE THE TEXTURE VERTICES TO THE .OBJ format (0 - 1)
+    scaleTexVerts(model, 0);   //MUST UNDO WHEN READING BACK In
+
+
     //open the file for writing and ensure success
     FILE *ofp = fopen(filename, "w");
     if(ofp == NULL)
@@ -181,6 +187,7 @@ void printMtl( MODL *model, char *filename )
 	return;
     }
 
+    
     //open the file for writing and ensure success
     FILE *ofp = fopen(filename, "w");
     if(ofp == NULL)
@@ -203,7 +210,7 @@ void printMtl( MODL *model, char *filename )
 	    fprintf(ofp, "%c", *t);
 	    t++;
 	}
-	fprintf(ofp, ".gif\n");
+	fprintf(ofp, ".png\n");
 
 	//i.e	newmtl m_eye.mat
 	//	map_Ka m_eye.gif

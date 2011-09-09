@@ -1,8 +1,8 @@
 PROJECT1 = 3doobj
-OBJ1 = main1.o modl.o read3do.o checkedMem.o writeObj.o
+OBJ1 = main1.o modl.o read3do.o checkedMem.o writeObj.o matScaler.o
 
 PROJECT2 = obj3do
-OBJ2 = main2.o modl.o read3do.o checkedMem.o objStructs.o readObj.o update3do.o write3do.o
+OBJ2 = main2.o modl.o read3do.o checkedMem.o objStructs.o readObj.o update3do.o write3do.o matScaler.o
 
 C99 = gcc -std=c99
 CFLAGS = -Wall -Werror -pedantic
@@ -42,8 +42,11 @@ objStructs.o : checkedMem.h objStructs.h objStructs.c
 readObj.o : objStructs.h checkedMem.h readObj.h readObj.c
 	$(C99) $(CFLAGS) -c -o readObj.o readObj.c
 
-update3do.o : objStructs.h modl.h checkedMem.h update3do.h update3do.c
+update3do.o : objStructs.h modl.h checkedMem.h matScaler.h update3do.h update3do.c
 	$(C99) $(CFLAGS) -c -o update3do.o update3do.c
+
+matScaler.o : modl.h checkedMem.h matNames.h matSize.h matScaler.h matScaler.c
+	$(C99) $(CFLAGS) -c -o matScaler.o matScaler.c
 
 clean:
 	rm -f $(OBJ2) $(PROJECT2)

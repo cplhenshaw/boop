@@ -3,6 +3,7 @@
 #include "objStructs.h"	
 #include "modl.h"
 #include "checkedMem.h"
+#include "matScaler.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,8 +37,7 @@ void setFaceDefaults(MESH *mesh, FACE *face)
 //update a MESH structure with the info from a GROUP structure
 void updateMesh(MODL *model, MESH *mesh, GROUP *group, float meshOffset[3])
 {
-	printf("Updating mesh %s\n", mesh->meshName);
-    //update the vertice array
+//update the vertice array
     
     //replace the mesh vertice array with the group vertice array
     mesh->numVertices = group->numVertices;
@@ -230,6 +230,9 @@ void update3do(MODL *model, OBJ *obj)
 	//start it off with the first node
 	updateMeshes(model, obj, model->nodes[0], startingOffset);
     }
+
+    //scale all the textures back from the .obj specification
+    scaleTexVerts(model, 1); 
 
     return;
 }
