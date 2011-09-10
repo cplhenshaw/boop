@@ -10,7 +10,7 @@
 void printMesh( MODL *model, MESH *mesh, float offset[3], FILE *ofp )
 {
     //make each mesh a separate group
-    fprintf(ofp, "g %s\n\n", mesh->meshName);
+    fprintf(ofp, "o %s\n\n", mesh->meshName);
     
     //write out the vertices, adding the correct offset
     for(int i=0; i < mesh->numVertices; i++)
@@ -173,8 +173,8 @@ void printObj( MODL *model, char *filename )
 		
 }
 
-/* Accepts a MODL structure previously filled by read3do() and the name of the file to write to.  It then produces a .mtl file to accompany the .obj file.  Each material name will be for example "m_eye.mat" and it will then specify a texture for that material (perhaps "m_eye.gif" pr whatever format is need. */
-void printMtl( MODL *model, char *filename )
+/* Accepts a MODL structure previously filled by read3do() and the name of the file to write to.  It then produces a .mtl file to accompany the .obj file.  Each material name will be for example "m_eye.mat" and it will then specify a texture for that material (perhaps "m_eye.gif" pr whatever format is passed in via the imFormat paramter */
+void printMtl( MODL *model, char *filename, char *imFormat )
 {
     if(model == NULL)
     {
@@ -210,7 +210,7 @@ void printMtl( MODL *model, char *filename )
 	    fprintf(ofp, "%c", *t);
 	    t++;
 	}
-	fprintf(ofp, ".png\n");
+	fprintf(ofp, "%s\n", imFormat);
 
 	//i.e	newmtl m_eye.mat
 	//	map_Ka m_eye.gif

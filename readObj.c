@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LINE_LEN 64
+#define MAX_LINE_LEN 128	//had  a face line over 64 chars so 128
 #define MAX_GROUP_NAME 32
 #define MAX_MAT_NAME 32
 
@@ -99,13 +99,18 @@ void processFaceLine(char *line)
     char *triplets[MAX_VERTS_PER_FACE + 1];
     
     char *current = line;
-    while(*current != '\0') 
+    while(*current != '\n') //continue until reach end of the line (was originally until '\0' but led
+			    
     {
 	if(*current == ' ')
 	{
 	    *current = '\0';
 	    //increment count and store char * to triplet of indices which should follow the space
-	    triplets[f->numVertices++] = current+1;
+	    //NOT in the case of end of line "10/12/9[ ][\n] (pretty big bug)
+	    if(*(current+1) != '\n')
+	    {
+		triplets[f->numVertices++] = current+1;
+	    }
 	    if(f->numVertices > MAX_VERTS_PER_FACE)
 	    {
 		fprintf(stderr, "More than %d vertices in this face.\n", MAX_VERTS_PER_FACE);
@@ -122,6 +127,7 @@ void processFaceLine(char *line)
 	int *it = f->indices[i];
 	int read = sscanf(triplets[i], "%d%*c%d%*c%d", it, it+1, it+2);
 	if(read != 3) fprintf(stderr, "sscanf() read %d values in processFaceLine()\n", read);
+	if(read != 3) fprintf(stderr, "reading from '%s'\n", triplets[i]);
 	
 	//reduce the indices to be local to each group
 	it[0] -= totalVertexCount;
@@ -187,6 +193,9 @@ void processLine(OBJ *obj, char *line)
 	    break;
 	case 'u':
 	    processMaterialLine(line);
+	    break;
+	case '\n':
+	    //simply skip over blank lines, no printout
 	    break;
 	default:
 	    fprintf(stderr, "Unhandled line: %s", line);

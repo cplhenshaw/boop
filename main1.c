@@ -10,10 +10,12 @@
 
 int main(int argc, char *argv[])
 {
-    if(argc != 3)
+    if(argc < 3)
     {
-	printf("Expected 2 arguments, an input and output filename.\n");
+	printf("Expected at least 2 arguments, an input and output filename.\n");
 	printf("Usage example '%s manny.3do manny.obj\n", argv[0]);
+	printf("Accepts an optional third argument which is the image format for the textures in the .mtl file\n");
+	printf("i.e '%s manny.3do manny.obj .jpg'\n", argv[0]);
 	exit(EXIT_FAILURE);
     }
 
@@ -34,9 +36,18 @@ int main(int argc, char *argv[])
     char *c = mtlFilename;
     while(*c++ != '.');
     strncpy(c, "mtl", 4);   //one more space for null byte
+	
+    if(argc == 4)
+    {
+	//if a third command line argument given use it as the image format for the .mtl
+	printMtl(m, mtlFilename, argv[3]);
+    }
+    else
+    {
+        //default to .png 
+	printMtl(m, mtlFilename, ".png"); 	
+    }
 
-    //write out a .mtl file to go with it
-    printMtl(m, mtlFilename); 
 
     //free memory associated with the MODL structure
     freeMODL(m);
